@@ -50,6 +50,5 @@ int main() {
         cin >> a;
         bs(0, n -1, sum, a);
     }
-    // RUNTIME ERROR FOR SOME REASON USAR DO ZE
     return 0;
 }
