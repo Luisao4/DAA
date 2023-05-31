@@ -1,0 +1,841 @@
+// 25Dado um conjunto de pontos de contacto e as suas respectivas ligações, a tua tarefa é descobrir o número de redes diferentes que existem no circuito. A figura seguinte ilustra um circuito com 3 redes.
+
+#include <iostream>
+
+#define MAX 25  // Maximo numero de nos
+
+using namespace std;
+
+int n;               // Numero de nos do grafo
+bool adj[MAX][MAX];  // Matriz de adjacencias
+bool visited[MAX];   // Que nos ja foram visitados?
+
+void dfs(int v) {
+    // cout << v << " ";
+    visited[v] = true;
+    for (int i = 1; i <= n; i++)
+        if (adj[v][i] && !visited[i])
+            dfs(i);
+}
+
+int main() {
+    int edges, a, b;
+
+    cin >> n;
+    cin >> edges;
+    for (int i = 0; i < edges; i++) {
+        cin >> a >> b;
+        adj[a][b] = adj[b][a] = true;
+    }
+    int c = 0;
+    for (int i = 1; i <= n; i++)
+        if (!visited[i]) {
+            c++;
+            dfs(i);
+        }
+    if (edges == 0)
+        cout << n << endl;
+    else
+        cout << c << endl;
+    // cout << endl;
+
+    return 0;
+}
+
+
+//26 Dado o estado de várias culturas de micróbios (indicados por uma matriz de células) a tua tarefa é descobrir qual o tamanho do maior micróbio em cada uma delas, ou seja, qual o tamanho do maior conjunto conexo de células em cada caso.
+// Exemplo de pesquisa em profundidade (DFS) num grafo nao dirigido
+
+#include <stdbool.h>
+
+#include <iostream>
+using namespace std;
+
+#define FILL '#'
+#define MAX 25  // Maximo numero de nos
+
+int rows, cols;
+char m[MAX][MAX];
+bool visited[MAX][MAX];
+int c = 0;
+
+void printmatrix(int rows, int cols, char m[][MAX]) {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            cout << m[i][j];
+        }
+        cout << endl;
+    }
+}
+
+void dfs(int y, int x) {
+    if (y < 0 || y >= rows || x < 0 || x >= cols) return;  // aceder a pos que nao existem
+    if (visited[y][x] || m[y][x] != FILL) return;
+    // cout<< "dfs(" << y << "," << x << ")"<<endl;
+    visited[y][x] = true;
+    c++;
+    dfs(y - 1, x);
+    dfs(y + 1, x);
+    dfs(y, x + 1);
+    dfs(y, x - 1);
+    dfs(y + 1, x + 1);
+    dfs(y - 1, x - 1);
+    dfs(y - 1, x + 1);
+    dfs(y + 1, x - 1);
+}
+
+void cleanseVisited() {
+    for (int i = 0; i < MAX; i++)
+        for (int j = 0; j < MAX; j++)
+            visited[i][j] = false;
+}
+
+int main() {
+    int n;
+    cin >> n;
+
+    while (n > 0) {
+        
+        cin >> rows >> cols;
+        cleanseVisited();  // reset do visited
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                cin >> m[i][j];
+            }
+        }
+        int flag = 0;  // comparaçao para ver qual o maior microbio
+        // printmatrix(rows,cols,m);
+        for (int i = 0; i < rows; i++)
+            for (int j = 0; j < cols; j++)
+                if (m[i][j] == FILL && !visited[i][j]) {
+                    c = 0;
+
+                    dfs(i, j);
+                    if (c > flag) flag = c;
+                    c=0;
+                    //           puts(" --------------------- ");
+                }
+        cout << flag << endl;
+        n--;
+    }
+    return 0;
+}
+
+
+// 27 Dados vários grafos não dirigidos, a tua tarefa é indicar se cada um deles é ou não bipartido.
+#include <iostream>
+#include <stdbool.h>
+using namespace std;
+
+#define MAX 55
+#define RED 0
+#define GREEN 1
+
+int n;              // Número de nós
+bool m[MAX][MAX];   // Matriz de adjacências
+bool visited[MAX];  // Visitados
+int color[MAX];     // Cores dos nós
+
+void cleanse() {
+    for(int i = 0; i < MAX; i++) {
+        visited[i] = false;
+        color[i] = -1;
+        for(int j = 0; j < MAX; j++)
+            m[i][j] = false;
+    }
+}
+
+bool dfs(int v, int c) {
+    if(visited[v]) {
+        if(color[v] == c) return true;
+        return false;
+    } else {
+        visited[v] = true;
+        color[v] = c;
+        (c == RED) ? c = GREEN : c = RED;
+        for(int i = 1; i <= n; i++)
+            if(m[v][i] && !dfs(i,c)) return false;
+        return true;
+    }
+}
+
+int main() {
+    int h;  
+   cin >> h;
+    for(int i = 0; i < h; i++) {
+        int e, a, b;    //  arestas, ligações
+        cin >> n>> e;
+        cleanse();
+        for(int i = 0; i < e; i++) {
+            cin >> a >> b;
+            m[a][b] = m[b][a] = true;   // Grafo não dirigido
+        }
+
+        if(dfs(1,RED))
+            cout << "sim" << endl;
+        else 
+            cout << "nao" << endl;
+    }
+    return 0;
+}
+
+
+// 29  A tua tarefa é escrever um programa para completar o trabalho do coleccionador. Em particular, o teu programa deverá receber um conjunto de palavras ordenadas associadas a uma dada sequência de ordem das letras e determinar qual é essa sequência.
+
+#include <iostream>
+#include <list>
+
+#define MAX 26
+
+using namespace std;
+
+int n;
+bool adj[MAX][MAX];
+bool visited[MAX];
+bool exists[MAX];
+
+string palavras[100];
+list<char> answer;
+
+void meaning() {
+    int j = 0;
+    for (int i = 0; i < n - 1; i++) {
+        j = i + 1;
+        int size1 = (int) palavras[i].length();
+        int size2 = (int) palavras[j].length();
+        for (int a = 0; a < size1 && a < size2; a++) {
+            if (palavras[i].at(a) != palavras[j].at(a)) {
+                adj[palavras[i].at(a) - 'A'][palavras[j].at(a) - 'A'] = true;
+                exists[palavras[i].at(a) - 'A'] = true;
+                exists[palavras[j].at(a) - 'A'] = true;
+                break;
+            }
+        }
+    }
+}
+
+void dfs(int v) {
+    visited[v] = true;
+    for (int j = 0; j < MAX; j++) {
+        if (adj[v][j] && !visited[j]) {
+            dfs(j);
+        }
+    }
+    answer.push_front(v);
+}
+
+int main() {
+    cin >> n;
+    for (int i = 0; i < n; i++)
+        cin >> palavras[i];
+
+    meaning();
+
+    for (int i = 0; i < MAX; i++)
+        if (exists[i] && !visited[i])
+            dfs(i);
+
+    for (int j : answer)
+        cout << (char) (j + 'A');
+
+    cout << endl;
+    return 0;
+}
+
+
+// 30 Dada um grafo conexo não dirigido e não pesado descrevendo uma rede biológica, a tua tarefa é calcular o seu diâmetro, o seu raio, quais os nós centrais e quais os nós periféricos.
+#include <climits>
+#include <iostream>
+#include <list>
+
+#define MAX 1505
+
+using namespace std;
+
+int dist[MAX][MAX];
+
+// Classe que representa um nó
+class Node {
+   public:
+    list<int> adj;  // Lista de adjacências
+    bool visited;   // Valor booleano que indica se foi visitado numa pesquisa
+    int distance;   // Distância ao nó origem da pesquisa
+};
+
+// Classe que representa um grafo
+class Graph {
+   public:
+    int n;        // Número de nós do grafo
+    Node *nodes;  // Array para conter os nós
+
+    Graph(int n) {
+        this->n = n;
+        nodes = new Node[n + 1];  // +1 se os nós começam em 1 ao invés de 0
+    }
+
+    void addLink(int a, int b) {
+        nodes[a].adj.push_back(b);
+        nodes[b].adj.push_back(a);
+    }
+
+    void bfs(int v) {
+        list<int> q;
+        for (int i = 1; i <= n; i++)
+            nodes[i].visited = false;
+
+        q.push_back(v);
+        nodes[v].visited = true;
+        nodes[v].distance = 0;
+        dist[v][v] = 0;
+
+        while (q.size() > 0) {
+            int u = q.front();
+            q.pop_front();
+            for (int w : nodes[u].adj) {
+                if (!nodes[w].visited) {
+                    q.push_back(w);
+                    nodes[w].visited = true;
+                    nodes[w].distance = nodes[u].distance + 1;
+                    dist[v][w] = nodes[w].distance;
+                }
+            }
+        }
+    }
+
+    int excentricidade(int v) {
+        int max = 0;
+        for (int i = 1; i <= n; i++)
+            if (dist[v][i] >= max)
+                max = dist[v][i];
+        return max;
+    }
+};
+
+int main() {
+    int n, e, a, b;
+    scanf("%d %d", &n, &e);
+
+    Graph *g = new Graph(n);
+    for (int i = 0; i < e; i++) {
+        cin >> a >> b;
+        g->addLink(a, b);
+    }
+
+    for (int i = 1; i <= n; i++)
+        g->bfs(i);
+
+    int diametro = 0;
+    int raio = INT_MAX;
+    for (int i = 1; i <= n; i++) {
+        int ex = g->excentricidade(i);
+        if (ex >= diametro) diametro = ex;
+        if (ex <= raio) raio = ex;
+    }
+    cout << diametro << endl
+         << raio << endl;
+
+    list<int> central;
+    list<int> periferic;
+
+    for (int i = 1; i <= n; i++) {
+        if (g->excentricidade(i) == raio)
+            central.push_back(i);
+        if (g->excentricidade(i) == diametro)
+            periferic.push_back(i);
+    }
+
+    int space = 0;
+    for (auto i : central) {
+        if (space == 0)
+            cout << i;
+        else
+            cout << " " << i;
+        space = 1;
+    }
+    cout << endl;
+
+    space = 0;
+    for (auto i : periferic) {
+        if (space == 0)
+            cout << i;
+        else
+            cout << " " << i;
+        space = 1;
+    }
+    cout << endl;
+
+    return 0;
+}
+
+//DJSIKRA GPT
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <limits>
+
+using namespace std;
+
+typedef pair<int, int> pii; // Pair de inteiros para representar (distância, nó)
+
+void dijkstra(const vector<vector<pii>>& graph, int source, vector<int>& distances) {
+    int n = graph.size();
+    distances.resize(n, numeric_limits<int>::max()); // Inicializa todas as distâncias como infinito
+    distances[source] = 0; // Define a distância do nó de origem como 0
+
+    priority_queue<pii, vector<pii>, greater<pii>> pq; // Fila de prioridade (distância, nó)
+    pq.push(make_pair(0, source));
+
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        int dist_u = pq.top().first;
+        pq.pop();
+
+        // Verifica se a distância extraída é atualizada
+        if (dist_u > distances[u])
+            continue;
+
+        // Percorre todos os vizinhos do nó atual
+        for (const auto& neighbor : graph[u]) {
+            int v = neighbor.first;
+            int weight = neighbor.second;
+
+            // Atualiza a distância se uma rota mais curta for encontrada
+            if (distances[u] + weight < distances[v]) {
+                distances[v] = distances[u] + weight;
+                pq.push(make_pair(distances[v], v));
+            }
+        }
+    }
+}
+
+int main() {
+    int n, m; // n = número de nós, m = número de arestas
+    cin >> n >> m;
+
+    vector<vector<pii>> graph(n);
+
+    for (int i = 0; i < m; i++) {
+        int u, v, weight;
+        cin >> u >> v >> weight;
+        graph[u].push_back(make_pair(v, weight));
+        graph[v].push_back(make_pair(u, weight)); // Grafo não direcionado, considerando as arestas nos dois sentidos
+    }
+
+    int source; // Nó de origem
+    cin >> source;
+
+    vector<int> distances;
+    dijkstra(graph, source, distances);
+
+    // Imprime as distâncias de todos os nós para o nó de origem
+    for (int i = 0; i < n; i++) {
+        cout << "Distância de " << source << " para " << i << ": " << distances[i] << endl;
+    }
+
+    return 0;
+}
+// BELLMAN FORD GPT
+#include <iostream>
+#include <vector>
+#include <limits>
+
+using namespace std;
+
+struct Edge {
+    int src, dest, weight;
+};
+
+void bellmanFord(const vector<Edge>& edges, int numNodes, int source, vector<int>& distances) {
+    distances.resize(numNodes, numeric_limits<int>::max()); // Inicializa todas as distâncias como infinito
+    distances[source] = 0; // Define a distância do nó de origem como 0
+
+    // Relaxamento das arestas repetidamente |V| - 1 vezes
+    for (int i = 0; i < numNodes - 1; ++i) {
+        for (const auto& edge : edges) {
+            int u = edge.src;
+            int v = edge.dest;
+            int weight = edge.weight;
+
+            if (distances[u] != numeric_limits<int>::max() && distances[u] + weight < distances[v]) {
+                distances[v] = distances[u] + weight;
+            }
+        }
+    }
+
+    // Verificação de ciclos de peso negativo
+    for (const auto& edge : edges) {
+        int u = edge.src;
+        int v = edge.dest;
+        int weight = edge.weight;
+
+        if (distances[u] != numeric_limits<int>::max() && distances[u] + weight < distances[v]) {
+            cout << "O grafo contém um ciclo de peso negativo." << endl;
+            return;
+        }
+    }
+}
+
+int main() {
+    int numNodes, numEdges;
+    cin >> numNodes >> numEdges;
+
+    vector<Edge> edges(numEdges);
+
+    for (int i = 0; i < numEdges; ++i) {
+        cin >> edges[i].src >> edges[i].dest >> edges[i].weight;
+    }
+
+    int source; // Nó de origem
+    cin >> source;
+
+    vector<int> distances;
+    bellmanFord(edges, numNodes, source, distances);
+
+    // Imprime as distâncias de todos os nós para o nó de origem
+    for (int i = 0; i < numNodes; ++i) {
+        cout << "Distância de " << source << " para " << i << ": " << distances[i] << endl;
+    }
+
+    return 0;
+}
+
+// FLOYD MASHALL GPT
+#include <iostream>
+#include <vector>
+#include <limits>
+
+using namespace std;
+
+void floydWarshall(const vector<vector<int>>& graph, int numNodes) {
+    vector<vector<int>> distances(graph);
+
+    // Inicializa as distâncias iniciais
+    for (int i = 0; i < numNodes; ++i) {
+        for (int j = 0; j < numNodes; ++j) {
+            if (i == j) {
+                distances[i][j] = 0;
+            } else if (distances[i][j] == 0) {
+                distances[i][j] = numeric_limits<int>::max();
+            }
+        }
+    }
+
+    // Cálculo das distâncias mínimas
+    for (int k = 0; k < numNodes; ++k) {
+        for (int i = 0; i < numNodes; ++i) {
+            for (int j = 0; j < numNodes; ++j) {
+                if (distances[i][k] != numeric_limits<int>::max() && distances[k][j] != numeric_limits<int>::max()
+                    && distances[i][k] + distances[k][j] < distances[i][j]) {
+                    distances[i][j] = distances[i][k] + distances[k][j];
+                }
+            }
+        }
+    }
+
+    // Imprime as distâncias entre todos os pares de nós
+    for (int i = 0; i < numNodes; ++i) {
+        for (int j = 0; j < numNodes; ++j) {
+            if (distances[i][j] == numeric_limits<int>::max()) {
+                cout << "Não há caminho entre o nó " << i << " e o nó " << j << endl;
+            } else {
+                cout << "Distância entre o nó " << i << " e o nó " << j << ": " << distances[i][j] << endl;
+            }
+        }
+    }
+}
+
+int main() {
+    int numNodes, numEdges;
+    cin >> numNodes >> numEdges;
+
+    vector<vector<int>> graph(numNodes, vector<int>(numNodes, 0));
+
+    for (int i = 0; i < numEdges; ++i) {
+        int u, v, weight;
+        cin >> u >> v >> weight;
+        graph[u][v] = weight;
+    }
+
+    floydWarshall(graph, numNodes);
+
+    return 0;
+}
+
+Ordenacao Topologica   ordem ← lista vazia
+marcar todos os n ́os como n ̃ao visitados
+Para todos os n ́os v do grafo fazer
+    Se v ainda n ̃ao foi visitado ent ̃ao
+        dfs(v )
+escrever(ordem)
+dfs(n ́o v ):
+    marcar v como visitado
+    Para todos os n ́os w adjacentes a v fazer
+        Se w ainda n ̃ao foi visitado ent ̃ao
+            dfs(w )
+    adicionar v ao in ́ıcio da lista ordem
+
+Detecao de Ciclos 
+cor[v ∈ V ] ← branco
+Para todos os n ́os v do grafo fazer
+    Se cor [v ] = branco ent ̃ao
+        dfs(v )
+dfs(n ́o v ):
+    cor[v ] ← cinzento
+    Para todos os n ́os w adjacentes a v fazer
+    Se cor[w ] = cinzento ent ̃ao
+        escrever(”Ciclo encontrado!”)
+    Sen ̃ao se cor[w ] = branco ent ̃ao
+        dfs(w )
+    cor[v ] ← preto
+
+
+
+Algoritmo de Tarjan para CFCs
+index ← 0 ; S ← ∅
+Para todos os n ́os v do grafo fazer
+    Se num[v ] ainda nao est ́a definido entao
+        dfs cfc(v )
+dfs cfc(n ́o v ):
+        num[v ] ← low [v ] ← index ; index ← index + 1 ; S.push(v )
+/* Percorrer arestas de v */
+    Para todos os n ́os w adjacentes a v fazer
+        Se num[w ] ainda n ̃ao est ́a definido ent ̃ao /* Tree Edge */
+            dfs cfc(w ) ; low [v ] ← min(low [v ], low [w ])
+        Senao se w est ́a em S ent ̃ao /* Back Edge */
+            low [v ] ← min(low [v ], num[w ])
+/* Sabemos que estamos numa ra ́ız de um SCC */
+    Se num[v ] = low [v ] ent ̃ao
+        Comecar novo CFC C
+        Repetir
+        w ← S.pop() ; Adicionar w a C
+        At ́e w = v
+        Escrever C
+
+
+Algoritmo para descobrir pontos de articulacao
+dfs art(n ́o v ):
+    num[v ] ← low [v ] ← index ; index ← index + 1 ; S.push(v )
+    Para todos os n ́os w adjacentes a v fazer
+    Se num[w ] ainda nao est ́a definido entao /* Tree Edge */
+        dfs art(w ) ; low [v ] ← min(low [v ], low [w ])
+    Se low [w ] ≥ num[v ] entao
+        escrever(v + ” ́e um ponto de articulacao)
+    Senao se w esta em S entao /* Back Edge */
+        low [v ] ← min(low [v ], num[w ])
+S.pop()
+
+
+
+Esqueleto da Pesquisa em Largura - O(|V | + |E |)
+    bfs(n ́o v ):
+    q ← ∅ /* Fila de n ́os n ̃ao visitados */
+    q.enqueue(v )
+    marcar v como visitado
+    Enquanto q 6 = ∅ /* Enquanto existirem n ́os por processar */
+    u ← q.dequeue() /* Retirar primeiro elemento de q */
+    Para todos os n ́os w adjacentes a u fazer
+        Se w ainda n ̃ao foi visitado ent ̃ao /* Novo n ́o! */
+            q.enqueue(w )
+            marcar w como visitad
+
+
+Pesquisa em Largura - Distancias
+bfs(n ́o v ):
+    q ← ∅ /* Fila de n ́os n ̃ao visitados */
+    q.enqueue(v )
+    v .distancia ← 0 /* distˆancia de v a si pr ́oprio  ́e zero */
+    marcar v como visitado
+    Enquanto q 6 = ∅ /* Enquanto existirem n ́os por processar */
+        u ← q.dequeue() /* Retirar primeiro elemento de q */
+        Para todos os n ́os w adjacentes a u fazer
+            Se w ainda n ̃ao foi visitado ent ̃ao /* Novo n ́o! */
+                q.enqueue(w )
+                marcar w como visitado
+                w .distancia ← u.distancia + 1
+
+
+Aqui está um exemplo de um programa em C++ que implementa a pesquisa em largura (BFS) para calcular as distâncias a partir de um nó específico em um grafo.
+#include <iostream>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+struct Node {
+    int index;
+    int distance;
+    bool visited;
+    vector<int> neighbors;
+};
+
+void bfs(vector<Node>& graph, int startNode) {
+    queue<int> q;
+    q.push(startNode);
+    graph[startNode].distance = 0;
+    graph[startNode].visited = true;
+
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+
+        for (int v : graph[u].neighbors) {
+            if (!graph[v].visited) {
+                q.push(v);
+                graph[v].visited = true;
+                graph[v].distance = graph[u].distance + 1;
+            }
+        }
+    }
+}
+
+int main() {
+    int numNodes, numEdges;
+    cin >> numNodes >> numEdges;
+
+    vector<Node> graph(numNodes);
+    for (int i = 0; i < numEdges; ++i) {
+        int u, v;
+        cin >> u >> v;
+        graph[u].neighbors.push_back(v);
+        graph[v].neighbors.push_back(u); // Grafo não direcionado, considerando as arestas nos dois sentidos
+    }
+
+    int startNode;
+    cin >> startNode;
+
+    bfs(graph, startNode);
+
+    // Imprime as distâncias a partir do nó inicial
+    for (int i = 0; i < numNodes; ++i) {
+        cout << "Distância de " << startNode << " para " << i << ": " << graph[i].distance << endl;
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+DPS basico
+// Exemplo de pesquisa em profundidade (DFS) num grafo nao dirigido
+
+#include <iostream>
+
+#define MAX 25      // Maximo numero de nos
+
+using namespace std;
+
+int n;              // Numero de nos do grafo
+bool adj[MAX][MAX]; // Matriz de adjacencias
+bool visited[MAX];  // Que nos ja foram visitados?
+
+void dfs(int v) {
+  cout << v << " ";
+  visited[v] = true;
+  for (int i=1; i<=n; i++)
+    if (adj[v][i] && !visited[i])
+      dfs(i);
+}
+
+int main() {
+  int edges, a, b;
+
+  cin >> n;
+  cin >> edges;
+  for (int i=0; i<edges; i++) {
+    cin >> a >> b;
+    adj[a][b] = adj[b][a] = true;
+  }
+
+  dfs(1); // Pesquisa em profundidade a partir do no 1
+  cout << endl;
+  
+  return 0;
+}
+
+
+BFS basico
+// Exemplo de pesquisa em largura (BFS) num grafo nao dirigido
+// (codigo adaptado do codigo em Java feito na teorica)
+// (inclui calculo de distancias)
+// (esta versao limpa no final a memoria criada - a cada "new" deve corresponder um "delete")
+
+#include <iostream>
+#include <list>
+
+using namespace std;
+
+// Classe que representa um no
+class Node {
+public:
+  list<int> adj;  // Lista de adjacencias
+  bool visited;   // Valor booleano que indica se foi visitado numa pesquisa
+  int distance;   // Distancia ao no origem da pesquisa
+
+  Node() {        // Nao e preciso mais nada porque adj ja foi criada
+  };              // mas queria mostrar que em C++ tambem existem construtores
+};
+
+// Classe que representa um grafo
+class Graph {
+public:
+  int n;          // Numero de nos do grafo
+  Node *nodes;    // Array para conter os nos
+
+  Graph(int n) { // Constructor: chamado quando um objeto Graph for criado
+    this->n = n;
+    nodes = new Node[n+1];  // +1 se os comecam em 1 ao inves de 0
+  }
+
+  ~Graph() { // Destructor: chamado quando um objeto Graph for destruido
+    delete[] nodes;
+  }
+
+  void addLink(int a, int b) {
+    nodes[a].adj.push_back(b);
+    nodes[b].adj.push_back(a);
+  }
+  
+  void bfs(int v) {
+    list<int> q;
+    for (int i=1; i<=n; i++) nodes[i].visited = false;
+    
+    q.push_back(v);
+    nodes[v].visited = true;
+    nodes[v].distance = 0;
+
+    while (q.size() > 0) {
+      int u = q.front(); q.pop_front();
+      cout << u << " [dist=" << nodes[u].distance << "]" << endl;
+      for (auto w : nodes[u].adj)
+        if (!nodes[w].visited) {
+          q.push_back(w);
+          nodes[w].visited  = true;
+          nodes[w].distance = nodes[u].distance + 1; 	  
+        }
+    }
+  }
+};
+
+int main() {
+  int n, e, a, b;
+  
+  cin >> n;
+  Graph g(n);
+  cin >> e;
+  for (int i=0; i<e; i++) {
+    cin >> a >> b;
+    g.addLink(a, b);
+  }
+
+  // Pesquisa em largura a partir do no 1
+  g.bfs(1);
+
+  return 0;
+}
+
+
+
